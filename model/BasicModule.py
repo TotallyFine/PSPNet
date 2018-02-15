@@ -5,7 +5,6 @@ import torch as t
 class BasicModule(t.nn.Module):
     def __init__(self):
         super(BasicModule, self).__init__()
-        self.module_name = str(type(self))
 
     def load(self, path):
         '''

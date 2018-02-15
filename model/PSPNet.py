@@ -57,6 +57,7 @@ class UpSample(nn.Module):
 class PSPNet(BasicModule):
     def __init__(self, n_classes=18, sizes=(1, 2, 3, 6), pretrained=True):
         super(PSPNet, self).__init__()
+        self.model_name = 'PSPNet'
         # feature extracting
         self.feat = resnet34(pretrained)
         # resnet34 output's channel is 512
