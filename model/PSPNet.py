@@ -16,7 +16,7 @@ class PPModule(nn.Module):
         small size panel used to classify and bigger size panel are better in detecting the border of object
         in Pyramid Pooling Module all conv's kernel size is 1, that's for preserve overall situation's info and reduce conv operation's enpenditures
         '''
-        super(PSPModule, self).__init__()
+        super(PPModule, self).__init__()
         self.panels = nn.ModuleList([self._make_panel(in_c, size) for size in sizes])
         # bottleneck combines panels and input
         self.bottleneck = nn.Conv2d(in_c * (len(sizes) + 1), out_c, kernel_size=1)

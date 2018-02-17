@@ -4,9 +4,11 @@ import torch
 from torchvision import transforms
 from torch.utils import data
 
+from skimage import io
 import glob
-from skimage import io, transform
 import random
+
+from .argumentation import random_crop, filp
 
 class Nuclei(data.Dataset):
     def __init__(self, config, pahse='train', ings_trans=None, masks_trans=None):
@@ -19,6 +21,8 @@ class Nuclei(data.Dataset):
         self.imgs_trans = imgs_trans
         self.mask_trans = masks_trans
         
+        self.config = config
+        
         # the path contains all data
         root = config.root
         if self.phase != 'test':
@@ -28,7 +32,7 @@ class Nuclei(data.Dataset):
             # val/train 3/10
             for p in paths:
                 imgs.append(glob.glob(p+'/images/*.png')[0])
-                masks = p + '/masks'
+                masks.appned(p+'/masks')
             if self.phase == 'train':
                 self.imgs = imgs
                 self.masks = masks
@@ -54,6 +58,8 @@ class Nuclei(data.Dataset):
         if img.shape[2] > 3:
             assert(img[:, :, 3]!=255).sum()==0
         img = img[:, :, :3]
+        
+        # only training
         if self.imgs_trans is None:
             self.imgs_trans = transforms.Compose([
                 # torchvision's transforms
@@ -74,7 +80,7 @@ class Nuclei(data.Dataset):
         else:
             # get this img's mask path object
             # list of all mask file
-            mask_files = glob.glob(self.masks[index]+'*.png')
+            mask_files = glob.glob(self.masks[index]+'/*.png')
             masks = []
             for mask in mask_files:
                 mask = io.imread(mask)
@@ -89,6 +95,14 @@ class Nuclei(data.Dataset):
             # ndarray.sum(0) sum the first axis
             # that is this axis disappear other dimension's size doesn't change
             mask = masks.sum(0)
+            
+            # argumentation,before this we need to convert numpy array to PIL Image
+            to_PIL = transforms.ToPILImage()
+            img = to_PIL(img)
+            mask = to_PIL(mask)
+            img, mask = random_crop(img, mask, config.crop_size)
+            img, mask = filp(img, mask)
+            
             return self.imgs_trans(img), self.masks_trans(mask)
 
     def __len__(self):
